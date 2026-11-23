@@ -1,11 +1,13 @@
 """Цепочка RAG: запрос -> эмбеддинг -> поиск в FAISS -> промпт (few-shot + CoT) -> LLM -> ответ с источниками."""
 import re
+import time
 from dataclasses import dataclass, field
 
 from openai import OpenAI
 
 from rag import config, safety
 from rag.indexing import Store
+from rag.querylog import log_query
 from rag.prompts import BLOCKED_INPUT, BLOCKED_OUTPUT, DONT_KNOW, FEW_SHOT, REFUSED, SYSTEM
 
 
@@ -22,8 +24,9 @@ class Answer:
 
 
 class RagBot:
-    def __init__(self, store: Store | None = None, protection: set[str] = config.PROTECTION):
+    def __init__(self, store: Store | None = None, protection: set[str] = config.PROTECTION, channel: str = "cli"):
         self.store = store or Store()
+        self.channel = channel
         self.protection = set(protection)
         self.llm = OpenAI(base_url=config.LLM_BASE_URL, api_key=config.LLM_API_KEY)
 
@@ -47,6 +50,16 @@ class RagBot:
         return messages
 
     def ask(self, question: str) -> Answer:
+        t0 = time.time()
+        try:
+            answer = self._answer(question)
+        except Exception as e:  # сбой поиска или генерации тоже попадает в журнал
+            log_query(Answer(question, ""), self.channel, time.time() - t0, error=f"{type(e).__name__}: {e}")
+            raise
+        log_query(answer, self.channel, time.time() - t0)
+        return answer
+
+    def _answer(self, question: str) -> Answer:
         question = re.sub(r"\s+", " ", question).strip()
         if "input" in self.protection and safety.is_injection(question):
             return Answer(question, BLOCKED_INPUT, blocked="input")

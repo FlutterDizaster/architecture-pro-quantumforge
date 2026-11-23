@@ -9,5 +9,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('intfloat/multilingual-e5-small')"
 
 COPY rag/ rag/
-COPY *.py ./
+COPY *.py golden_questions.txt ./
 CMD ["python", "telegram_bot.py"]

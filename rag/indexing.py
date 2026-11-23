@@ -127,7 +127,9 @@ class Store:
         if self.index.ntotal == 0:
             return []
         scores, ids = self.index.search(embed_query(query), k)
-        return [{**self.chunks[int(i)], "id": int(i), "score": float(s)} for s, i in zip(scores[0], ids[0]) if i != -1]
+        # id без метаданных (индекс и chunks.json разошлись) пропускаем, а не падаем
+        return [{**self.chunks[int(i)], "id": int(i), "score": float(s)}
+                for s, i in zip(scores[0], ids[0]) if int(i) in self.chunks and self.chunks[int(i)].get("text")]
 
     def changed_on_disk(self) -> bool:
         return self.index_path.exists() and self.index_path.stat().st_mtime > self.loaded_at

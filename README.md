@@ -24,4 +24,8 @@ docker compose run --rm indexer   # полная пересборка индек
 docker compose up -d updater      # ежедневное обновление индекса в 06:00 UTC
 ```
 
-База знаний пересобирается из Wookieepedia командами `python kb/fetch.py && python kb/replace_terms.py`.
+База знаний пересобирается из Wookieepedia командами
+`python kb/fetch.py && python kb/replace_terms.py && python kb/remove_entities.py`
+(последний скрипт вносит искусственные пробелы из задания 7), затем `python update_index.py`.
+
+Автотест по золотому набору: `python evaluate.py` или `docker compose run --rm evaluator`.

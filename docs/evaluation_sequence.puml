@@ -1,0 +1,66 @@
+@startuml evaluation_sequence
+title Обработка запроса и автотест по золотому набору
+
+actor "Пользователь\n(Telegram)" as user
+participant "evaluate.py" as eval
+participant "RagBot\n(rag/pipeline.py)" as bot
+participant "safety.py" as safety
+participant "Store\n(FAISS + chunks.json)" as store
+participant "e5-small" as e5
+participant "LLM API\n(OpenAI-совместимый)" as llm
+database "logs/queries.jsonl" as qlog
+database "logs/evaluation.jsonl\ndocs/evaluation_report.md" as elog
+
+== Обычный запрос ==
+user -> bot : вопрос
+bot -> safety : is_injection(вопрос)
+alt похоже на инъекцию
+  safety --> bot : да
+  bot --> user : отказ (слой input)
+else обычный вопрос
+bot -> store : search(вопрос, k=5)
+store -> e5 : embed("query: ...")
+e5 --> store : вектор 384
+store -> store : IndexIDMap2(FlatIP), топ-5
+note right of store #FFDDDD
+  Сбой: пустой индекс (ntotal = 0)
+  -> пустая выдача -> «Я не знаю».
+  Сбой: невалидный чанк (id есть в FAISS,
+  нет в chunks.json) -> чанк пропускается.
+end note
+store --> bot : чанки со score
+bot -> bot : порог 0.78, отброс suspicious,\nвырезание команд
+alt чанков не осталось
+  bot --> user : «Я не знаю», LLM не вызывается
+else есть контекст
+  bot -> llm : system + few-shot + контекст + вопрос
+  note right of llm #FFDDDD
+    Сбой генерации: таймаут, 5xx,
+    finish_reason = content_filter,
+    пустой ответ -> отказ или ошибка
+  end note
+  llm --> bot : Шаги + Ответ с [n]
+  bot -> safety : has_secret(ответ, шаги)
+  alt похоже на секрет
+    bot --> user : «Не могу показать ответ» (слой output)
+  else
+    bot --> user : ответ, источники, шаги
+  end
+end
+end
+bot -> qlog : запрос, время, найдены ли чанки,\nисточники, длина ответа, success;\nпри исключении тоже, с полем error
+
+== Автотест ==
+eval -> eval : читает golden_questions.txt\n(known, removed, absent, side)
+loop для каждого вопроса
+  eval -> bot : ask(вопрос), channel = eval
+  bot --> eval : ответ, retrieved, cited
+  note right of eval #FFDDDD
+    Исключение в цепочке не роняет прогон:
+    вопрос получает status = error
+  end note
+  eval -> eval : known: нужный документ в топ-5,\nвсе ключевые слова в ответе\nremoved / absent: ответа нет\nside: удалённый факт не выдуман
+end
+eval -> elog : результаты по вопросам и сводка
+eval --> eval : exit 1, если точность < 80%
+@enduml

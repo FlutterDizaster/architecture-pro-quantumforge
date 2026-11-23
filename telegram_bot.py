@@ -29,7 +29,7 @@ def render(a) -> str:
 
 
 def main() -> None:
-    bot = RagBot()
+    bot = RagBot(channel="telegram")
     offset = 0
     with httpx.Client(timeout=60) as client:
         log.info("bot started")
