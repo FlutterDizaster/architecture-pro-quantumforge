@@ -13,6 +13,7 @@ cp .env.example .env        # вписать LLM_API_KEY и TELEGRAM_BOT_TOKEN
 python build_index.py       # индекс уже лежит в index/, пересборка нужна только при смене базы
 python cli.py --steps       # консольный бот
 python telegram_bot.py      # Telegram-бот
+python update_index.py      # инкрементальное обновление индекса
 ```
 
 В Docker:
@@ -20,6 +21,7 @@ python telegram_bot.py      # Telegram-бот
 ```bash
 docker compose up -d --build bot
 docker compose run --rm indexer   # полная пересборка индекса
+docker compose up -d updater      # ежедневное обновление индекса в 06:00 UTC
 ```
 
 База знаний пересобирается из Wookieepedia командами `python kb/fetch.py && python kb/replace_terms.py`.

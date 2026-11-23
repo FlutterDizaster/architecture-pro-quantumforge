@@ -38,3 +38,5 @@ Alliance to Restore the Republic
 Battle of Yavin
 Battle of Hoth
 Battle of Endor
+# добавлено при проверке обновления индекса
+Battle of Scarif

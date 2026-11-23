@@ -1,0 +1,51 @@
+@startuml update_index
+title Ежедневное обновление индекса базы знаний
+
+actor "Авторы документации" as authors
+node "Источники" {
+  database "Confluence" as confluence
+  database "Git (README, ADR)" as git
+}
+node "Docker-хост (docker compose)" {
+  folder "knowledge_base/\nфайлы .md" as kb
+  component "updater\n(update_index.py --daily 06:00)" as updater
+  component "Чанкинг\nRecursiveCharacterTextSplitter\n1600 символов, overlap 240" as chunker
+  component "Эмбеддинги\nmultilingual-e5-small, 384" as embedder
+  folder "index/" {
+    file "faiss.index\nIndexIDMap2(FlatIP)" as faiss
+    file "chunks.json\nметаданные" as meta
+    file "manifest.json\nsha1 файлов" as manifest
+  }
+  folder "logs/" {
+    file "update_index.jsonl" as log
+  }
+  component "bot\n(telegram_bot.py)" as bot
+}
+
+authors --> confluence : пишут страницы
+authors --> git : README, ADR
+confluence --> kb : экспорт в Markdown\n(в пилоте файлы кладутся вручную)
+git --> kb : копия Markdown
+updater --> kb : 1. сканирует файлы
+updater --> manifest : 2. сравнивает sha1:\nновые, изменённые, удалённые
+updater --> chunker : 3. новые и изменённые файлы
+chunker --> embedder : 4. чанки
+embedder --> faiss : 5. add_with_ids
+updater --> faiss : remove_ids для изменённых\nи удалённых файлов\n(после того как новые\nчанки посчитаны)
+updater --> meta : метаданные чанков
+updater --> manifest : новые sha1
+updater --> log : время старта и конца, файлы,\nновые чанки, размер индекса, ошибки
+bot --> faiss : перечитывает индекс,\nкогда меняется faiss.index
+
+note right of updater
+  Запуск: сервис updater в docker compose,
+  каждый день в 06:00 UTC.
+  Альтернатива: cron на хосте
+  0 6 * * * docker compose run --rm updater python update_index.py
+  Ошибка в одном файле: файл попадает в errors,
+  его старая версия остаётся в индексе,
+  остальные файлы обрабатываются, код выхода 1.
+  Падение всего прогона: 3 попытки с паузой 10 минут,
+  каждая попытка пишется в лог.
+end note
+@enduml

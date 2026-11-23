@@ -85,7 +85,9 @@ class Store:
         self.index_path = index_dir / "faiss.index"
         self.meta_path = index_dir / "chunks.json"
         self.manifest_path = index_dir / "manifest.json"
+        self.loaded_at = 0.0
         if self.index_path.exists():
+            self.loaded_at = self.index_path.stat().st_mtime
             self.index = faiss.read_index(str(self.index_path))
             self.chunks = {int(k): v for k, v in json.loads(self.meta_path.read_text()).items()}
             self.manifest = json.loads(self.manifest_path.read_text())
@@ -95,12 +97,17 @@ class Store:
             self.chunks, self.manifest = {}, {}
 
     def add_file(self, path: Path) -> int:
+        """Добавляет документ, а если он уже был в индексе, заменяет его чанки.
+
+        Чанки и эмбеддинги считаются до удаления старых: если упадёт на них, старая версия документа останется в индексе.
+        """
         chunks = chunk_file(path)
+        vecs = embed_passages([f"{c['title']}. {c['text']}" for c in chunks]) if chunks else None
+        self.remove_file(path.name)
         if not chunks:
             return 0
         start_id = max(self.chunks, default=-1) + 1
         ids = np.arange(start_id, start_id + len(chunks), dtype="int64")
-        vecs = embed_passages([f"{c['title']}. {c['text']}" for c in chunks])
         self.index.add_with_ids(vecs, ids)
         for i, c in zip(ids, chunks):
             self.chunks[int(i)] = c
@@ -122,8 +129,16 @@ class Store:
         scores, ids = self.index.search(embed_query(query), k)
         return [{**self.chunks[int(i)], "id": int(i), "score": float(s)} for s, i in zip(scores[0], ids[0]) if i != -1]
 
+    def changed_on_disk(self) -> bool:
+        return self.index_path.exists() and self.index_path.stat().st_mtime > self.loaded_at
+
     def save(self) -> None:
+        # индекс пишем последним: бот перечитывает всё по изменению faiss.index,
+        # к этому моменту метаданные уже на месте
         self.dir.mkdir(parents=True, exist_ok=True)
-        faiss.write_index(self.index, str(self.index_path))
         self.meta_path.write_text(json.dumps(self.chunks, ensure_ascii=False, indent=0))
         self.manifest_path.write_text(json.dumps(self.manifest, indent=1, sort_keys=True))
+        tmp = self.index_path.with_suffix(".tmp")
+        faiss.write_index(self.index, str(tmp))
+        tmp.replace(self.index_path)
+        self.loaded_at = self.index_path.stat().st_mtime

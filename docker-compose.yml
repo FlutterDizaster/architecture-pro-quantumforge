@@ -16,3 +16,13 @@ services:
       - ./index:/app/index
       - ./knowledge_base:/app/knowledge_base:ro
     profiles: [tools]
+
+  # Ежедневное обновление индекса в 6:00 UTC, при падении три попытки с паузой 10 минут.
+  updater:
+    build: .
+    command: python update_index.py --daily 06:00
+    volumes:
+      - ./index:/app/index
+      - ./knowledge_base:/app/knowledge_base:ro
+      - ./logs:/app/logs
+    restart: unless-stopped

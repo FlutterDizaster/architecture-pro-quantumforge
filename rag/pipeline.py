@@ -29,6 +29,8 @@ class RagBot:
 
     def retrieve(self, question: str) -> tuple[list[dict], int]:
         """Чанки выше порога и сколько из них отброшено как подозрительные."""
+        if self.store.changed_on_disk():  # индекс обновил update_index.py
+            self.store = Store(self.store.dir)
         hits = [h for h in self.store.search(question, config.TOP_K) if h["score"] >= config.MIN_SCORE]
         if "corpus" not in self.protection:
             return hits, 0
