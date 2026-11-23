@@ -21,3 +21,8 @@ LLM_API_KEY = os.getenv("LLM_API_KEY", "")
 TOP_K = int(os.getenv("TOP_K", "5"))
 # Ниже этого косинуса чанк считаем нерелевантным; если таких нет, в LLM не идём и отвечаем «не знаю».
 MIN_SCORE = float(os.getenv("MIN_SCORE", "0.78"))
+
+# Защита от промпт-инъекций (задание 5): on, off или список слоёв через запятую: input,corpus,prompt,output
+LAYERS = {"input", "corpus", "prompt", "output"}
+_p = os.getenv("PROTECTION", "on")
+PROTECTION = LAYERS if _p == "on" else set() if _p == "off" else set(_p.split(","))

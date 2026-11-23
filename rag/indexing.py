@@ -9,6 +9,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from sentence_transformers import SentenceTransformer
 
 from rag import config
+from rag.safety import is_injection
 
 _model = None
 
@@ -52,6 +53,7 @@ def chunk_file(path: Path) -> list[dict]:
         # хвосты короче 40 слов сами по себе бесполезны, приклеиваем к предыдущему чанку
         if chunks and len(body.split()) < 40:
             chunks[-1]["text"] += " " + body
+            chunks[-1]["suspicious"] = is_injection(chunks[-1]["text"])
             continue
         if len(chunks) == 1 and len(chunks[0]["text"].split()) < 10:
             # от документа остался один заголовок, склеиваем его со следующим чанком
@@ -66,6 +68,7 @@ def chunk_file(path: Path) -> list[dict]:
             "chunk_index": len(chunks),
             "start": start,
             "text": body,
+            "suspicious": is_injection(body),
         })
     return chunks
 
