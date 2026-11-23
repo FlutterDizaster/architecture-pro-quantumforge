@@ -41,3 +41,20 @@ Morrak. Проверил, что модель не знает этот мир п
 «Кто такой Xarn Velgor?», «What is the Void Core built by the Dominion of Astra?» Claude Haiku 5.5 отвечает «не знаю».
 
 Как пересобрать: `python kb/fetch.py && python kb/replace_terms.py`.
+
+## Задание 3. Создание векторного индекса базы знаний
+
+Код: `rag/indexing.py` (чанки, эмбеддинги, работа с FAISS) и `build_index.py` (полная сборка). Подробности и пример
+запроса в [index/README.md](index/README.md).
+
+- Модель: [intfloat/multilingual-e5-small](https://huggingface.co/intfloat/multilingual-e5-small), 384 измерения.
+  Выбрал многоязычную, потому что база на английском, а спрашивать будут и по-русски.
+- База: 35 документов из `knowledge_base/`.
+- Чанков: 235, в среднем 175 слов (1 600 символов, перекрытие 15%). У каждого чанка сохранены файл, заголовок
+  документа, раздел, номер и позиция в документе, чтобы бот мог сослаться на источник.
+- Индекс: FAISS, косинусная близость через нормализацию и `IndexFlatIP`, в обёртке `IndexIDMap2`.
+- Время генерации: 8 секунд вместе с загрузкой модели.
+
+Пример: на вопрос «Who trained Kaelen Vossar as a Novitiate?» первыми приходят два чанка из `kaelen_vossar.md` и
+один из `tavin_vossar.md` со score 0.84-0.87. На вопросы не по базе (Kafka, Netflix, VPN, пароль root, чемпионат мира)
+лучший score не выше 0.76. По этим замерам потом выбран порог «не знаю» 0.78.
