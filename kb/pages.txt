@@ -1,0 +1,40 @@
+# персонажи
+Anakin Skywalker
+Luke Skywalker
+Leia Organa
+Han Solo
+Obi-Wan Kenobi
+Yoda
+Sheev Palpatine
+Chewbacca
+R2-D2
+C-3PO
+Boba Fett
+Lando Calrissian
+Padmé Amidala
+Qui-Gon Jinn
+# планеты
+Tatooine
+Hoth
+Endor
+Naboo
+Coruscant
+Dagobah
+Alderaan
+Kashyyyk
+# технологии и объекты
+DS-1 Death Star Mobile Battle Station
+Lightsaber
+Millennium Falcon
+Kyber crystal
+Hyperdrive
+# организации и понятия
+Force
+Jedi Order
+Sith
+Galactic Empire
+Alliance to Restore the Republic
+# события
+Battle of Yavin
+Battle of Hoth
+Battle of Endor
