@@ -15,7 +15,7 @@ CHUNK_SIZE = 1600      # символов, в среднем ~175 слов ан�
 CHUNK_OVERLAP = 240    # 15%
 
 LLM_BASE_URL = os.getenv("LLM_BASE_URL", "https://api.anthropic.com/v1/")
-LLM_MODEL = os.getenv("LLM_MODEL", "claude-sonnet-5-5")
+LLM_MODEL = os.getenv("LLM_MODEL", "claude-haiku-5-5")
 LLM_API_KEY = os.getenv("LLM_API_KEY", "")
 
 TOP_K = int(os.getenv("TOP_K", "5"))

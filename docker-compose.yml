@@ -1,0 +1,18 @@
+services:
+  # Бот и FAISS живут в одном процессе: индекс читается из ./index, который монтируется томом.
+  bot:
+    build: .
+    env_file: .env
+    volumes:
+      - ./index:/app/index
+      - ./knowledge_base:/app/knowledge_base:ro
+    restart: unless-stopped
+
+  # Полная пересборка индекса: docker compose run --rm indexer
+  indexer:
+    build: .
+    command: python build_index.py
+    volumes:
+      - ./index:/app/index
+      - ./knowledge_base:/app/knowledge_base:ro
+    profiles: [tools]
