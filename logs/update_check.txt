@@ -1,0 +1,21 @@
+# Проверка update_index.py, 2026-11-23 22:29
+
+## 1. Индекс в актуальном состоянии
+index updated at 2026-11-23, 0 files added, 0 changed, 0 removed, 0 new chunks, 236 total, 637 KB, 0 errors
+
+## 2. Бот запущен на старом индексе, добавляем статью Battle of Scarif (kb/fetch.py + kb/replace_terms.py) и обновляем
+37 documents, 331 terms, leaks: 0
+index updated at 2026-11-23, 1 files added, 0 changed, 0 removed, 8 new chunks, 244 total, 658 KB, 0 errors
+до обновления: О битве при Corall в контексте сведений нет, Ответ: Я не знаю. Ember Squad вместе с Mira Halden украли планы Void Core и помогли уничтожить станцию в Battle of Ostara с участием Tavin Vossar [5].
+после обновления, тот же процесс бота: Битва при Corall была первым крупным сражением Sundering War в 1 BVC между League to Restore the Concord и Dominion of Astra [4]. Ember Squad — это отряд, который Mira Halden, Captain Dorin Sorrel и их товарищи создали самовольно, чтобы украсть планы Void Core со станции Corall Citadel, отвлекая силы Dominion и разрушая Shield Gate [1][2][3]. | источники: battle_of_corall.md
+
+## 3. Повторный прогон ничего не меняет
+index updated at 2026-11-23, 0 files added, 0 changed, 0 removed, 0 new chunks, 244 total, 658 KB, 0 errors
+
+## 4. Битый файл (не UTF-8) рядом с новым документом
+index updated at 2026-11-23, 1 files added, 0 changed, 0 removed, 7 new chunks, 251 total, 676 KB, 1 errors
+exit code 1
+errors: ["broken.md: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte"]
+
+## 5. Удаляем оба файла
+index updated at 2026-11-23, 0 files added, 0 changed, 1 removed, 0 new chunks, 244 total, 658 KB, 0 errors

@@ -1,0 +1,41 @@
+services:
+  # Бот и FAISS живут в одном процессе: индекс читается из ./index, который монтируется томом.
+  bot:
+    build: .
+    env_file: .env
+    volumes:
+      - ./index:/app/index
+      - ./knowledge_base:/app/knowledge_base:ro
+      - ./logs:/app/logs
+    restart: unless-stopped
+
+  # Полная пересборка индекса: docker compose run --rm indexer
+  indexer:
+    build: .
+    command: python build_index.py
+    volumes:
+      - ./index:/app/index
+      - ./knowledge_base:/app/knowledge_base:ro
+    profiles: [tools]
+
+  # Ежедневное обновление индекса в 6:00 UTC, при падении три попытки с паузой 10 минут.
+  updater:
+    build: .
+    command: python update_index.py --daily 06:00
+    volumes:
+      - ./index:/app/index
+      - ./knowledge_base:/app/knowledge_base:ro
+      - ./logs:/app/logs
+    restart: unless-stopped
+
+  # Автотест по золотому набору после обновления индекса: docker compose run --rm evaluator
+  evaluator:
+    build: .
+    command: python evaluate.py
+    env_file: .env
+    volumes:
+      - ./index:/app/index
+      - ./logs:/app/logs
+      - ./docs:/app/docs
+    profiles: [tools]
+

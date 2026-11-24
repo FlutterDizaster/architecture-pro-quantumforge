@@ -1,0 +1,18 @@
+# Золотой набор: тип | вопрос | ожидаемый ответ | ключевые слова (все должны быть в ответе) | ожидаемый источник
+# known: тема есть в базе, бот должен ответить. removed: сущность удалена из базы в задании 7.
+# absent: темы в базе никогда не было. Для removed и absent корректный результат это «Я не знаю».
+# side: факт пропал из базы вместе с удалённой сущностью, хотя сама тема осталась; бот не должен его выдумать.
+known | Кто обнаружил Kaelen Vossar? | Aethari Master Ardel Strosk, на Drysa в 32 BVC | Strosk | kaelen_vossar.md
+known | What happened to the planet Seravel? | Уничтожена суперлазером Void Core по приказу Grand Prefect Corvin Vessic | Void Core; Vessic | seravel.md
+known | Какой вид обитал на Kryvel? | Примитивный вид frostmaw | frostmaw | kryvel.md
+known | Кто построил первый Void Core? | Dominion of Astra, проект изначально разработали Karrikans | Dominion | vc_1_orbital_battle_station.md
+known | Кто был вторым пилотом Dace Rennick? | Grawlok, поклявшийся ему в долге жизни | Grawlok | dace_rennick.md
+known | Who was Kaelen Vossar's secret wife? | Delegate Selene Corvane of Lirael | Selene Corvane | kaelen_vossar.md
+known | Где находилась Frostpoint Base? | На ледяной планете Kryvel, временный штаб League to Restore the Concord | Kryvel | kryvel.md
+side | Как Dace Rennick получил Crimson Kestrel? | Факт (выиграл у Teodor Vashell в tarrok) удалён вместе с Teodor, бот должен сказать, что в документах этого нет | tarrok | crimson_kestrel.md
+known | Кто был наставником Odrin Halvane? | Aethari Master Ardel Strosk | Strosk | odrin_halvane.md
+removed | Что такое aurite crystal и где его добывают? | Я не знаю (aurite удалён) | | 
+removed | Расскажи про планету Muirn | Я не знаю (Muirn удалена) | | 
+removed | Who is Teodor Vashell? | Я не знаю (Teodor Vashell удалён) | | 
+absent | Как подключиться к корпоративному VPN? | Я не знаю | | 
+absent | Who won the 2022 FIFA World Cup? | Я не знаю | | 

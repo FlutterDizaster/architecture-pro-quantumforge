@@ -1,0 +1,8 @@
+.venv
+.env
+.git
+kb
+index
+knowledge_base
+logs
+__pycache__
